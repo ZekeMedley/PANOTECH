@@ -21,32 +21,22 @@ void loop() {
 
     switch(input)
     {
-      case 'l':
+      case 'L' || 'l':
         TheDriver.stopDrill();
         delay(100);
         TheDriver.turnLeft();
         break;
-      case 'r':
+      case 'R' || 'r':
         TheDriver.stopDrill();
         delay(100);
         TheDriver.turnRight();
         break;
-      case 'l1':
-        TheDriver.stopDrill();
-        delay(100);
-        TheDriver.turnLeft();
-        break;
-      case 'r1':
-        TheDriver.stopDrill();
-        delay(100);
-        TheDriver.turnRight();
-        break;
-      case 'd':
+      case 'D':
         TheDriver.driveDrill();
         delay(200);
         TheDriver.stopDrill();
         break;
-      case 'd1':
+      case 'd':
         TheDriver.driveDrill();
         delay(100);
         TheDriver.stopDrill();
