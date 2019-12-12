@@ -4,7 +4,7 @@ from webcam_face_extractor import make_webcam_face_getter
 from time import sleep
 
 def make_direction_decider(width):
-    DISTANCE_THRESHOLD = 0.05 * width
+    DISTANCE_THRESHOLD = 0.1* width
 
     def decider(faces):
         try:
@@ -25,13 +25,13 @@ def make_direction_decider(width):
 
         if abs(distance) > DISTANCE_THRESHOLD:
             if target[0] < width / 4:
-                return 'l'
+                return 'L'
             elif target[0] <= width / 2:
-                return 'l1'  #smaller
+                return 'l'  #smaller
             if target[0] > (3*width / 4):
-                return 'r'
+                return 'R'
             elif target[0] >= width / 2:
-                return 'r1'  # smaller
+                return 'r'  # smaller
             # Now trying a different mode of smaller movement
         return "s"
 
@@ -49,13 +49,13 @@ def main():
         ser = send_command(ser, command)
         # rest..
         sleep(2)
-        if ( command == 'l' or command == 'r' ):
-            ser = send_command(ser, 'd')
+        if ( command == 'L' or command == 'R' ):
+            ser = send_command(ser, 'D')
             # After this is sent, we need to give the
             # machine some love and let it rest / do its work.
             sleep(2)
-        elif ( command == 'l1' or command == 'r1' ):
-            ser = send_command(ser, 'd1') # d1 is for a smaller movement
+        elif ( command == 'l' or command == 'r' ):
+            ser = send_command(ser, 'd') # d1 is for a smaller movement
             # After this is sent, we need to give the
             # machine some love and let it rest / do its work.
             sleep(2)
