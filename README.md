@@ -57,3 +57,19 @@ different terminal sessions:
 	```
 	
 Boom. Assuming install worked, you should be up and running.
+
+OpenCV
+------
+
+On the PI we needed to install some additional dependencies to get
+opencv working properly:
+
+```
+pip3 install opencv-python
+sudo apt-get install libatlas-base-dev
+sudo apt-get install libjasper-dev
+sudo apt-get install libqtgui4
+sudo apt-get install python3-pyqt5
+sudo apt install libqt4-test
+
+```
