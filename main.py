@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from webcam_face_extractor import make_webcam_face_getter
+from webcam_face_extractor import make_tflite_face_getter
 from static_generator import make_static_generator
 
 import cv2
@@ -9,8 +9,9 @@ import re
 from sys import platform
 import subprocess
 import random
+import time
 
-WINDOW_NAME = 'window'
+WINDOW_NAME = 'PANOTECH'
 
 WIDTH = 768
 HEIGHT = 1368
@@ -20,6 +21,9 @@ def translate(value, leftMin, leftMax, rightMin, rightMax):
     # Figure out how 'wide' each range is
     leftSpan = leftMax - leftMin
     rightSpan = rightMax - rightMin
+    
+    if float(leftSpan) == 0:
+        return value
 
     # Convert the left range into a 0-1 range (float)
     valueScaled = float(value - leftMin) / float(leftSpan)
@@ -28,7 +32,7 @@ def translate(value, leftMin, leftMax, rightMin, rightMax):
     return int(rightMin + (valueScaled * rightSpan))
 
 def main():
-    get_faces, camw, camh = make_webcam_face_getter()
+    get_faces, camw, camh = make_tflite_face_getter()
     static_frame = make_static_generator(90, WIDTH, HEIGHT) # should be 1366 for rpi but 1368 is multiple of 4 so...
 
     # successive_failure_count = 0
@@ -79,6 +83,7 @@ def main():
                 f_txtimg = cv2.putText(flipped_f, random_text, (50, 50), cv2.FONT_HERSHEY_TRIPLEX , 1, (0, 255, 0), 2, cv2.LINE_AA)
 
                 aggregate[y: y + h, x: x + w] = np.fliplr(f_txtimg)
+                #aggregate[y: y + h, x: x + w] = f
             aggregate = np.fliplr(aggregate)
         else:
             # show static

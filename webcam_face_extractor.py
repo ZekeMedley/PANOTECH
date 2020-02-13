@@ -2,7 +2,56 @@
 
 # OpenCV program to detect face in real time from webcam footage.
 import cv2
+from edgetpu.detection.engine import DetectionEngine
+from PIL import Image
 
+def make_tflite_face_getter():
+    camera = cv2.VideoCapture(0)
+    cameraIndex = 0
+    if not camera.isOpened():
+        camera = cv2.VideoCapture(1)
+        cameraIndex = 1
+    
+    width, height = int(camera.get(3)), int(camera.get(4))
+    
+    engine = DetectionEngine('./models/mobilenet_ssd_v2_face_quant_postprocess_edgetpu.tflite')
+    
+    def zoomer():
+        nonlocal cameraIndex
+        nonlocal camera
+        
+        if not camera.isOpened():
+            camera.release()
+            print("[error] couldn't open camera. Aborting and trying new index.")
+            cameraIndex += 1
+            cameraIndex = cameraIndex % 2
+            camera = cv2.VideoCapture(cameraIndex)
+            return []
+        
+        success, img = camera.read()
+        if not success:
+            print("[error] Could't read from webcam.")
+            return []
+        
+        ans = engine.detect_with_image(
+            Image.fromarray(img),
+            threshold=0.05,
+            keep_aspect_ratio=False,
+            relative_coord=False,
+            top_k=10
+        )
+        
+        def result_getter(face):
+            x, y, x2, y2 = list(map(int, face.bounding_box.flatten().tolist()))
+            w = x2 - x
+            h = y2 - y
+            return (img[y:y + h, x:x + w], (x, y))
+        
+        if ans:
+            return list(map(result_getter, ans))
+        return []
+    return zoomer, width, height
+                
 def make_webcam_face_getter():
     # imageCount = 0
     # Hooks up camera to the default video capture device.
@@ -41,7 +90,7 @@ def make_webcam_face_getter():
         # Perform the detection with some standard params.
         faces = faceCascade.detectMultiScale(
             greyscale,
-            minSize=(100, 100)
+            minSize=(100, 100),
         )
         if len(faces) == 0:
             return []
