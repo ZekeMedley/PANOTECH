@@ -41,7 +41,6 @@ def generate_perlin_noise_3d(shape, res):
     n1 = (1-t[:,:,:,1])*n01 + t[:,:,:,1]*n11
     return ((1-t[:,:,:,2])*n0 + t[:,:,:,2]*n1)
 
-
 dirname = os.path.dirname(__file__)
 NOISE_FILE_PREFIX = os.path.join(dirname, 'noise')
 
@@ -57,6 +56,10 @@ def make_static_generator(frames, width, height):
     if noise is None:
         print('Generating noise and saving to file...')
         noise = generate_perlin_noise_3d((frames, height, width), (1, 4, 4))
+
+        # DUP
+        # noise = [f for f in noise for _ in [0] * 3]
+
         np.save(noise_filepath, noise)
 
     print('Got noise!')
@@ -67,7 +70,7 @@ def make_static_generator(frames, width, height):
                 yield frame
             for frame in reversed(noise):
                 yield frame
-    return static_frame
+    return static_frame()
 
 # once we know the resolution, we should go ahead and save this array
 # so that it doesn't need to be recomputed are startup.

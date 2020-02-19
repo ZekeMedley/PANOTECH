@@ -13,7 +13,7 @@ WINDOW_NAME = 'window'
 
 def main():
     get_faces, camw, camh = make_webcam_face_getter()
-    static_frame = make_static_generator(25, camw, camh)()
+    static_frame = make_static_generator(100, camw, camh)
 
     # successive_failure_count = 0
     # failure_threshold = 10
@@ -45,7 +45,7 @@ def main():
     # cv2.setWindowProperty(WINDOW_NAME, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
 
     background_red_img = np.zeros((camh, camw, 3), np.uint8)
-    background_red_img[:] = (0, 0, 255)
+    background_red_img[:] = (12, 12, 165)
 
     while True:
         faces = get_faces()
