@@ -14,7 +14,7 @@ WINDOW_NAME = 'window'
 
 def main():
     get_faces, camw, camh = make_webcam_face_getter()
-    static_frame = make_static_generator(10, camw, camh)
+    static_frame = make_static_generator(60, camw, camh)
 
     # successive_failure_count = 0
     # failure_threshold = 10
@@ -53,22 +53,19 @@ def main():
         if len(faces):
             aggregate = background_red_img.copy()
             for (f, c) in faces:
-                # aggregate = cv2.copyTo(aggregate, f.submat(0, 30, 0, 30))
                 x, y = c
                 h, w, _ = f.shape
-                random_text = str(random.choice(np.arange(1,999999)))
-                flipped_f = cv2.flip(f, 1)
-                f_txtimg = cv2.putText(flipped_f, random_text, (50, 50), cv2.FONT_HERSHEY_TRIPLEX ,1, (0, 255, 0), 2, cv2.LINE_AA) 
-                # cv2.imshow(WINDOW_NAME, image_text)
 
-                # if x < 0 or x + w > camw:
-                #     continue
-                aggregate[y:y + h, x:x + w] = np.fliplr(f_txtimg)
+                random_text = str(random.choice(np.arange(1, 999999)))
+                flipped_f = cv2.flip(f, 1)
+                f_txtimg = cv2.putText(flipped_f, random_text, (50, 50), cv2.FONT_HERSHEY_TRIPLEX , 1, (0, 255, 0), 2, cv2.LINE_AA)
+
+                aggregate[y: y + h, x: x + w] = np.fliplr(f_txtimg)
+            aggregate = np.fliplr(aggregate)
         else:
             # show static
             aggregate = next(static_frame)
 
-        aggregate = np.fliplr(aggregate)
         cv2.imshow(WINDOW_NAME, aggregate)
         cv2.waitKey(1)
 
