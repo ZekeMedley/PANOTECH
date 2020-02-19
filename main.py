@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 from webcam_face_extractor import make_webcam_face_getter
 
 def main():

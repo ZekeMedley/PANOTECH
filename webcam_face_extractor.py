@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 # OpenCV program to detect face in real time from webcam footage.
 import cv2
 
