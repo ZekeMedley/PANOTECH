@@ -14,7 +14,7 @@ WINDOW_NAME = 'window'
 
 def main():
     get_faces, camw, camh = make_webcam_face_getter()
-    static_frame = make_static_generator(100, camw, camh)
+    static_frame = make_static_generator(10, camw, camh)
 
     # successive_failure_count = 0
     # failure_threshold = 10
@@ -68,6 +68,7 @@ def main():
             # show static
             aggregate = next(static_frame)
 
+        aggregate = np.fliplr(aggregate)
         cv2.imshow(WINDOW_NAME, aggregate)
         cv2.waitKey(1)
 
