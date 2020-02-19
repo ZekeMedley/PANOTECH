@@ -7,6 +7,7 @@ import numpy as np
 import re
 from sys import platform
 import subprocess
+import random
 
 WINDOW_NAME = 'window'
 
@@ -47,6 +48,7 @@ def main():
 
     background_red_img = np.zeros((camh, camw, 3), np.uint8)
     background_red_img[:] = (0, 0, 255)
+   
 
     while True:
         aggregate = background_red_img.copy()
@@ -56,10 +58,14 @@ def main():
                 # aggregate = cv2.copyTo(aggregate, f.submat(0, 30, 0, 30))
                 x, y = c
                 h, w, _ = f.shape
+                random_text = str(random.choice(np.arange(1,999999)))
+                flipped_f = cv2.flip(f, 1)
+                f_txtimg = cv2.putText(flipped_f, random_text, (50, 50), cv2.FONT_HERSHEY_TRIPLEX ,1, (0, 255, 0), 2, cv2.LINE_AA) 
+                # cv2.imshow(WINDOW_NAME, image_text)
 
                 # if x < 0 or x + w > camw:
                 #     continue
-                aggregate[y:y + h, x:x + w] = f
+                aggregate[y:y + h, x:x + w] = np.fliplr(f_txtimg)
         else:
             # show static
             print ('static')
