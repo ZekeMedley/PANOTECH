@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import cv2
 
 camera = cv2.VideoCapture(0)
@@ -32,3 +34,4 @@ while True:
     # if the `q` key was pressed, break from the loop
     if key == ord("q"):
         break
+
