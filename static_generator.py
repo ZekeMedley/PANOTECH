@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 import os
+import time
 
 def generate_perlin_noise_3d(shape, res):
     def f(t):
@@ -55,12 +56,16 @@ def make_static_generator(frames, width, height):
             print('Could not load noise from file')
     if noise is None:
         print('Generating noise and saving to file...')
+        start = time.time()
         noise = generate_perlin_noise_3d((frames, height, width), (1, 4, 4))
 
         # DUP
         # noise = [f for f in noise for _ in [0] * 3]
 
         np.save(noise_filepath, noise)
+
+        elapsed = time.time() - start
+        print(f"Generated noise in {round(elapsed, 2)} seconds")
 
     print('Got noise!')
 

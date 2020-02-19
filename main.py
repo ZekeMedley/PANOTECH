@@ -14,7 +14,7 @@ WINDOW_NAME = 'window'
 
 def main():
     get_faces, camw, camh = make_webcam_face_getter()
-    static_frame = make_static_generator(60, camw, camh)
+    static_frame = make_static_generator(90, 768, 1368) # should be 1366 for rpi but 1368 is multiple of 4 so...
 
     # successive_failure_count = 0
     # failure_threshold = 10
