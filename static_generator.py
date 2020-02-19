@@ -1,10 +1,11 @@
 import cv2
 import numpy as np
+import os
 
 def generate_perlin_noise_3d(shape, res):
     def f(t):
         return 6*t**5 - 15*t**4 + 10*t**3
-    
+
     delta = (res[0] / shape[0], res[1] / shape[1], res[2] / shape[2])
     d = (shape[0] // res[0], shape[1] // res[1], shape[2] // res[2])
     grid = np.mgrid[0:res[0]:delta[0],0:res[1]:delta[1],0:res[2]:delta[2]]
@@ -40,57 +41,56 @@ def generate_perlin_noise_3d(shape, res):
     n1 = (1-t[:,:,:,1])*n01 + t[:,:,:,1]*n11
     return ((1-t[:,:,:,2])*n0 + t[:,:,:,2]*n1)
 
-def generate_perlin_noise_2d(shape, res):
-    def f(t):
-        return 6*t**5 - 15*t**4 + 10*t**3
-    
-    delta = (res[0] / shape[0], res[1] / shape[1])
-    d = (shape[0] // res[0], shape[1] // res[1])
-    grid = np.mgrid[0:res[0]:delta[0],0:res[1]:delta[1]].transpose(1, 2, 0) % 1
-    # Gradients
-    angles = 2*np.pi*np.random.rand(res[0]+1, res[1]+1)
-    gradients = np.dstack((np.cos(angles), np.sin(angles)))
-    g00 = gradients[0:-1,0:-1].repeat(d[0], 0).repeat(d[1], 1)
-    g10 = gradients[1:  ,0:-1].repeat(d[0], 0).repeat(d[1], 1)
-    g01 = gradients[0:-1,1:  ].repeat(d[0], 0).repeat(d[1], 1)
-    g11 = gradients[1:  ,1:  ].repeat(d[0], 0).repeat(d[1], 1)
-    # Ramps
-    n00 = np.sum(np.dstack((grid[:,:,0]  , grid[:,:,1]  )) * g00, 2)
-    n10 = np.sum(np.dstack((grid[:,:,0]-1, grid[:,:,1]  )) * g10, 2)
-    n01 = np.sum(np.dstack((grid[:,:,0]  , grid[:,:,1]-1)) * g01, 2)
-    n11 = np.sum(np.dstack((grid[:,:,0]-1, grid[:,:,1]-1)) * g11, 2)
-    # Interpolation
-    t = f(grid)
-    n0 = n00*(1-t[:,:,0]) + t[:,:,0]*n10
-    n1 = n01*(1-t[:,:,0]) + t[:,:,0]*n11
-    return np.sqrt(2)*((1-t[:,:,1])*n0 + t[:,:,1]*n1)
+dirname = os.path.dirname(__file__)
+NOISE_FILE_PREFIX = os.path.join(dirname, 'noise')
 
-import time
+def make_static_generator(frames, width, height):
+    noise = None
+    noise_filepath = os.path.join(NOISE_FILE_PREFIX, f"{frames}_{width}_{height}.npy")
+    if os.path.exists(noise_filepath):
+        try:
+            print('Loading noise from file...')
+            noise = np.load(noise_filepath)
+        except:
+            print('Could not load noise from file')
+    if noise is None:
+        print('Generating noise and saving to file...')
+        noise = generate_perlin_noise_3d((frames, height, width), (1, 4, 4))
 
-width = 256*2
-height= 256*2
+        # DUP
+        # noise = [f for f in noise for _ in [0] * 3]
 
-noise = generate_perlin_noise_3d((100, width, height), (1, 4, 4))
+        np.save(noise_filepath, noise)
+
+    print('Got noise!')
+
+    def static_frame():
+        while True:
+            for frame in noise:
+                yield frame
+            for frame in reversed(noise):
+                yield frame
+    return static_frame()
 
 # once we know the resolution, we should go ahead and save this array
 # so that it doesn't need to be recomputed are startup.
 
-while True:
+# while True:
 
-    for layer in noise:
-        cv2.imshow('simple', layer)
-        key = cv2.waitKey(1) & 0xFF
- 
-        # if the `q` key was pressed, break from the loop
-        if key == ord("q"):
-            break
-        time.sleep(0.05)
+#     for layer in noise:
+#         cv2.imshow('simple', layer)
+#         key = cv2.waitKey(1) & 0xFF
 
-    for layer in reversed(noise):
-        cv2.imshow('simple', layer)
-        key = cv2.waitKey(1) & 0xFF
- 
-        # if the `q` key was pressed, break from the loop
-        if key == ord("q"):
-            break
-        time.sleep(0.05)
+#         # if the `q` key was pressed, break from the loop
+#         if key == ord("q"):
+#             break
+#         time.sleep(0.05)
+
+#     for layer in reversed(noise):
+#         cv2.imshow('simple', layer)
+#         key = cv2.waitKey(1) & 0xFF
+
+#         # if the `q` key was pressed, break from the loop
+#         if key == ord("q"):
+#             break
+#         time.sleep(0.05)
