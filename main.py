@@ -15,6 +15,7 @@ WINDOW_NAME = 'window'
 WIDTH = 768
 HEIGHT = 1368
 
+# https://stackoverflow.com/a/1969274
 def translate(value, leftMin, leftMax, rightMin, rightMax):
     # Figure out how 'wide' each range is
     leftSpan = leftMax - leftMin
