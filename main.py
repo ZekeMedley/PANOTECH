@@ -49,23 +49,24 @@ def main():
     background_red_img[:] = (0, 0, 255)
 
     while True:
+        aggregate = background_red_img.copy()
         faces = get_faces()
         if len(faces):
-            aggregate = background_red_img.copy()
             for (f, c) in faces:
                 # aggregate = cv2.copyTo(aggregate, f.submat(0, 30, 0, 30))
                 x, y = c
                 h, w, _ = f.shape
 
-                x = camw - x
-                if x < 0 or x + w > camw:
-                    continue
+                # if x < 0 or x + w > camw:
+                #     continue
                 aggregate[y:y + h, x:x + w] = f
-            cv2.imshow(WINDOW_NAME, aggregate)
-            cv2.waitKey(1)
         else:
             # show static
-            print('static')
+            print ('static')
+
+        aggregate = np.fliplr(aggregate)
+        cv2.imshow(WINDOW_NAME, aggregate)
+        cv2.waitKey(1)
 
     # cv2.waitKey(0)
     cv2.destroyAllWindows()

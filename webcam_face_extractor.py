@@ -39,12 +39,21 @@ def make_webcam_face_getter():
 
         greyscale = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         # Perform the detection with some standard params.
-        faces = faceCascade.detectMultiScale(greyscale)
+        faces = faceCascade.detectMultiScale(
+            greyscale,
+            minSize=(100, 100)
+        )
         if len(faces) == 0:
             return []
 
+        # faces = [max(faces, key=lambda f: f[2] * f[3])] # PICK BIGGEST FACE
         extract_face = lambda f: (img[f[1]:f[1] + f[3], f[0]:f[0] + f[2]], (f[0], f[1]))
+
+        # face_filter = lambda f: f[2] > 100 and f[3] > 100
+        # faces = filter(face_filter, faces)
+
         face_imgs = map(extract_face, faces)
+
         return list(face_imgs)
         # success = cv2.imwrite("images/" + str(imageCount) + '.jpg', colorFace)
 
