@@ -12,9 +12,23 @@ import random
 
 WINDOW_NAME = 'window'
 
+WIDTH = 768
+HEIGHT = 1368
+
+def translate(value, leftMin, leftMax, rightMin, rightMax):
+    # Figure out how 'wide' each range is
+    leftSpan = leftMax - leftMin
+    rightSpan = rightMax - rightMin
+
+    # Convert the left range into a 0-1 range (float)
+    valueScaled = float(value - leftMin) / float(leftSpan)
+
+    # Convert the 0-1 range into a value in the right range.
+    return int(rightMin + (valueScaled * rightSpan))
+
 def main():
     get_faces, camw, camh = make_webcam_face_getter()
-    static_frame = make_static_generator(90, 768, 1368) # should be 1366 for rpi but 1368 is multiple of 4 so...
+    static_frame = make_static_generator(90, WIDTH, HEIGHT) # should be 1366 for rpi but 1368 is multiple of 4 so...
 
     # successive_failure_count = 0
     # failure_threshold = 10
@@ -45,7 +59,7 @@ def main():
     # cv2.namedWindow(WINDOW_NAME, cv2.WND_PROP_FULLSCREEN)
     # cv2.setWindowProperty(WINDOW_NAME, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
 
-    background_red_img = np.zeros((camh, camw, 3), np.uint8)
+    background_red_img = np.zeros((HEIGHT, WIDTH, 3), np.uint8)
     background_red_img[:] = (12, 12, 165)
 
     while True:
@@ -55,6 +69,9 @@ def main():
             for (f, c) in faces:
                 x, y = c
                 h, w, _ = f.shape
+
+                x = translate(x, 0, camw - w, 0, WIDTH - w)
+                y = translate(y, 0, camh - h, 0, HEIGHT - h)
 
                 random_text = str(random.choice(np.arange(1, 999999)))
                 flipped_f = cv2.flip(f, 1)
