@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 from webcam_face_extractor import make_webcam_face_getter
+from static_generator import make_static_generator
 
 import cv2
 import numpy as np
@@ -10,11 +11,9 @@ import subprocess
 
 WINDOW_NAME = 'window'
 
-WIDTH = 2000
-HEIGHT = 2000
-
 def main():
     get_faces, camw, camh = make_webcam_face_getter()
+    static_frame = make_static_generator(25, camw, camh)()
 
     # successive_failure_count = 0
     # failure_threshold = 10
@@ -49,9 +48,9 @@ def main():
     background_red_img[:] = (0, 0, 255)
 
     while True:
-        aggregate = background_red_img.copy()
         faces = get_faces()
         if len(faces):
+            aggregate = background_red_img.copy()
             for (f, c) in faces:
                 # aggregate = cv2.copyTo(aggregate, f.submat(0, 30, 0, 30))
                 x, y = c
@@ -59,12 +58,12 @@ def main():
 
                 # if x < 0 or x + w > camw:
                 #     continue
-                aggregate[y:y + h, x:x + w] = f
+                aggregate[y: y + h, x: x + w] = f
+            aggregate = np.fliplr(aggregate)
         else:
             # show static
-            print ('static')
+            aggregate = next(static_frame)
 
-        aggregate = np.fliplr(aggregate)
         cv2.imshow(WINDOW_NAME, aggregate)
         cv2.waitKey(1)
 
