@@ -7,7 +7,7 @@ if not camera.isOpened():
     print("[error] couldn't open camera.")
     exit()
     
-frontalCascade = cv2.CascadeClassifier("haarcascade_frontalface_default.xml")
+frontalCascade = cv2.CascadeClassifier("../models/haarcascade_frontalface_default.xml")
 
 while True:
     success, img = camera.read()
@@ -28,7 +28,7 @@ while True:
     for (x, y, w, h) in faces:
         cv2.rectangle(img, (x, y), (x+w, y+h), (0, 255, 0), 2)
     
-    cv2.imshow('image', img)
+    cv2.imshow('python', img)
     key = cv2.waitKey(1) & 0xFF
  
     # if the `q` key was pressed, break from the loop

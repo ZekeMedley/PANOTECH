@@ -1,0 +1,15 @@
+Based on an article [1] on realtime webcam processing, I want to try
+to seperate the processing of frames and the retreiving of them. This
+is based on the observation that if we just collect frames and
+instantly display them in opencv it looks very realtime.
+
+On the main thread I'll collect frames from the webcam and push them
+into a work queue. Threads will pop items from the work queue and push
+them to the render queue. The main thread will also render frames in
+the render queue.
+
+To compile:
+
+clang++ $(pkg-config --cflags --libs opencv4) -std=c++17 main.cpp -o main -Ofast -march=native -Wall -Wextra
+
+[1] https://towardsdatascience.com/real-time-and-video-processing-object-detection-using-tensorflow-opencv-and-docker-2be1694726e5
