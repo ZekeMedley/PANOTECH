@@ -65,7 +65,7 @@ def make_webcam_face_getter():
 
     # The classifier we use. HAAR is slower than some other options, but
     # is more accurate. We can tune this later.
-    faceCascade = cv2.CascadeClassifier("haarcascade_frontalface_default.xml")
+    faceCascade = cv2.CascadeClassifier("./models/haarcascade_frontalface_default.xml")
 
     def zoomer():
         nonlocal cameraIndex
