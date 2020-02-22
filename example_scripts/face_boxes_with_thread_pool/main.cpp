@@ -5,67 +5,51 @@
 #include <iostream>
 #include <queue>
 #include <utility>
+#include <chrono>
 
-// The frame's index and its data.
-using WorkItem = std::pair<double, cv::Mat>;
-
-// Comparason function for WorkItems
-struct WorkItemComparator
+inline std::vector<cv::Rect> getFaces(const cv::Mat frame)
 {
-    // Replaces std::less.
-    bool operator()(const WorkItem& lhs, const WorkItem& rhs)
-    {
-	return lhs.first < rhs.first;
-    }
-};
+    static cv::CascadeClassifier detector("../../models/haarcascade_frontalface_default.xml");
+
+    std::vector<cv::Rect> faces;
+    cv::Mat greyscale;
+
+    cv::cvtColor(frame, greyscale, cv::COLOR_BGR2GRAY);
+    detector.detectMultiScale(greyscale,
+			      faces,
+			      1.3,
+			      3,
+			      0,
+			      cv::Size(100, 100));
+
+    return faces;
+}
 
 int main()
 {
-    std::priority_queue<WorkItem,
-			std::vector<WorkItem>,
-			WorkItemComparator> renderQueue;
+    std::queue<cv::Rect> renderQueue;
     std::mutex renderQueueLock;
 
     cv::CascadeClassifier detector("../../models/haarcascade_frontalface_default.xml");
     
-    ThreadPool pool(8);
-    
-    auto workFn = [&renderQueue, &renderQueueLock, detector](WorkItem wi) mutable
+    auto workFn = [&](const cv::Mat frame) mutable
 		      {
-			  cv::Mat& frame = wi.second;
-			  std::vector<cv::Rect> faces;
-			  cv::Mat greyscale;
-			  
-			  cv::cvtColor(frame, greyscale, cv::COLOR_BGR2GRAY);
-
-			  detector.detectMultiScale(greyscale,
-			  			    faces,
-			  			    1.3,
-			  			    3,
-			  			    0,
-			  			    cv::Size(30, 30));
-
-			  for (const auto& face : faces)
-			  {
-			      cv::Point top(face.x, face.y);
-			      cv::Point bot(face.x + face.width, face.y + face.height);
-			      cv::rectangle(frame, top, bot,
-			  		    cv::Scalar(0, 255, 255));
-			  }
-			  
 			  renderQueueLock.lock();
-			  renderQueue.emplace(std::move(wi));
+			  for (const auto& r : getFaces(frame))
+			      renderQueue.push(std::move(r));
 			  renderQueueLock.unlock();
 		      };
     
     cv::VideoCapture cap;
-
     if ( ! cap.open(0) )
     {
 	std::cout << "[error] couldn't open camera stream.\n";
 	return 1;
     }
 
+    auto start_time = std::chrono::steady_clock::now();
+    size_t frames_rendered = 0;
+    
     while ( true )
     {
 	cv::Mat frame;
@@ -76,25 +60,38 @@ int main()
 	    std::cout << "[error] failed to read from camera.\n";
 	    return 1;
 	}
-	std::async(workFn, std::make_pair(cap.get(cv::CAP_PROP_POS_FRAMES), std::move(frame)));
-//	pool.enqueue(workFn, std::make_pair(cap.get(cv::CAP_PROP_POS_FRAMES), std::move(frame)));
-	
-	cv::Mat top;
+	std::async(workFn, frame);
+
+	// Pop all the rectangles out of the render queue.
+	std::vector<cv::Rect> toRender;
 	renderQueueLock.lock();
-	
 	if ( ! renderQueue.empty() )
 	{
-	    top = std::move(renderQueue.top().second);
-	    renderQueue.pop();
+	    while ( ! renderQueue.empty() )
+	    {
+		toRender.emplace_back(std::move(renderQueue.front()));
+		renderQueue.pop();
+	    }
 	}
-
 	renderQueueLock.unlock();
 
-	if ( ! top.empty() )
+	// Unlock the queue and draw all of them.
+	for ( const auto& face : toRender )
 	{
-	    cv::imshow("thread pool", top);
-	    if( cv::waitKey(1) == 27 ) break;
+	    cv::Point topr(face.x, face.y);
+	    cv::Point botl(face.x + face.width, face.y + face.height);
+	    cv::rectangle(frame, topr, botl, cv::Scalar(0, 255, 255), 2);
 	}
+
+	++frames_rendered;
+	auto elapsed_time = std::chrono::duration_cast<std::chrono::seconds>
+	    (std::chrono::steady_clock::now() - start_time).count();
+	double frame_rate = frames_rendered / double(elapsed_time);
+
+	cv::putText(frame, std::to_string(frame_rate), cv::Point(100, 100),
+		    cv::FONT_HERSHEY_SIMPLEX, 1, cv::Scalar(255, 0, 0));
+	cv::imshow("thread pool", frame);
+	if( cv::waitKey(1) == 27 ) break;
     }
     return 0;
 }
