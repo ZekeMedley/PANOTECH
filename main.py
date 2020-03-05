@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from webcam_face_extractor import make_tflite_face_getter
+from webcam_face_extractor import make_webcam_face_getter
 from static_generator import make_static_generator
 
 import cv2
@@ -32,7 +32,7 @@ def translate(value, leftMin, leftMax, rightMin, rightMax):
     return int(rightMin + (valueScaled * rightSpan))
 
 def main():
-    get_faces, camw, camh = make_tflite_face_getter()
+    get_faces, camw, camh = make_webcam_face_getter()
     static_frame = make_static_generator(90, WIDTH, HEIGHT) # should be 1366 for rpi but 1368 is multiple of 4 so...
 
     # successive_failure_count = 0

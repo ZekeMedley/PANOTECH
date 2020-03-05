@@ -2,10 +2,10 @@
 
 # OpenCV program to detect face in real time from webcam footage.
 import cv2
-from edgetpu.detection.engine import DetectionEngine
 from PIL import Image
 
 def make_tflite_face_getter():
+    from edgetpu.detection.engine import DetectionEngine
     camera = cv2.VideoCapture(0)
     cameraIndex = 0
     if not camera.isOpened():

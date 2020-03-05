@@ -34,9 +34,10 @@ int main()
     
     auto workFn = [&](const cv::Mat frame) mutable
 		      {
+			  const std::vector<cv::Rect> faces = getFaces(frame);
 			  renderQueueLock.lock();
-			  for (const auto& r : getFaces(frame))
-			      renderQueue.push(std::move(r));
+			  for (const auto& face : faces)
+			      renderQueue.push(std::move(face));
 			  renderQueueLock.unlock();
 		      };
     
@@ -60,21 +61,21 @@ int main()
 	    std::cout << "[error] failed to read from camera.\n";
 	    return 1;
 	}
-	std::async(workFn, frame);
+	std::async(std::launch::async, workFn, frame);
 
 	// Pop all the rectangles out of the render queue.
 	std::vector<cv::Rect> toRender;
-	renderQueueLock.lock();
-	if ( ! renderQueue.empty() )
+
+	if ( renderQueueLock.try_lock() )
 	{
 	    while ( ! renderQueue.empty() )
 	    {
 		toRender.emplace_back(std::move(renderQueue.front()));
 		renderQueue.pop();
 	    }
+	    renderQueueLock.unlock();
 	}
-	renderQueueLock.unlock();
-
+	
 	// Unlock the queue and draw all of them.
 	for ( const auto& face : toRender )
 	{
